@@ -5,12 +5,12 @@ import numpy as np
 from time import time as timer 
 
 
-class experiments: 
+class performanceTest: 
     def __init__(self):
 
         self.databases = ["grundriss2", "grundriss2RDF", "grundriss6", "grundriss6RDF", "grundriss8", "grundriss8RDF", "grundriss10", "grundriss10RDF"]
         
-        # For Connection to the Neo4j Database Management Sytsem
+        # For connecting to the Neo4j Database Management Sytsem
         self.__URI = "bolt://localhost:7687"
         self.__AUTH = ("neo4j", "kais1234")
 
@@ -21,7 +21,7 @@ class experiments:
         self.numberOfIteration = None
     
 
-    def experiment(self, file, numberOfIteration):
+    def executeExperiment(self, file, numberOfIteration):
     
         self.numberOfIteration = numberOfIteration
 
@@ -52,7 +52,7 @@ class experiments:
                         )
                         
        
-    # Extract queries according their types and the run the queries against the graphs by running method 
+    # Extract queries according their types and run the queries against each graph
     def setup(self, tx, dbType, dbName):
        
        # Query of type 1
@@ -68,7 +68,7 @@ class experiments:
      
     
       
-    # Execute the queries of a certain type and for a certain number of iteration
+    # Execute the queries (of a specifc type) and for a certain number of iterations
     def executeQueries(self, tx, set, typeNumber, dbName): 
         measuresType = pd.DataFrame({
                             f"Type{typeNumber}_query1":{"Type":None, "query":None, "Mean":None, "Std":None, "Median":None}, 
@@ -80,22 +80,21 @@ class experiments:
         
         for i , query in enumerate(set):
 
-            # Saving the measured time
-            execution_time = []
+            execution_time = [] # For saving the execution time in each iteration
 
             with tqdm(total=self.numberOfIteration, desc=f"Graph: {dbName}, Type: {typeNumber},  Query: {i}", unit="query") as pbar:
                 for _ in range(self.numberOfIteration):
+                    
                     start = timer()
-                    result= tx.run(query)
+                    tx.run(query)
                     end = timer()
 
-                    # Saving the time in microsecond
                     key = f"Type{typeNumber}_query{i+1}"
-                    execution_time.append( (end-start) *1e6)
+                    execution_time.append( (end-start) *1e6) # execution time in microseconds
                     pbar.update()
 
-                # Calculate the measures and save them
-                measuresType[key]["Type"]=typeNumber
+                # Calculate the performance metrics and save them 
+                measuresType[key]["Type"] = typeNumber
                 measuresType[key]["query"] = f"query_{i+1}"
                 measuresType[key]["Mean"] = np.mean(execution_time)
                 measuresType[key]["Median"] = np.median(execution_time)
@@ -104,24 +103,15 @@ class experiments:
 
         return measuresType
 
-    # Get the queries for the file
+    # Get the queries form the file
     def getQueriesFromFile(self,file):
         return pd.read_excel(file)
     
-    # Create for every graph a cvs file
+    # Create a cvs file with the results for each graph
     def convertResults(self):
         for db in self.databases:
             df = self.graphs_measures[db]
-            df.to_csv(f"./experiment_1/{db}_measures", index=False)
+            df.to_csv(f"./Experiment_1/results/{db}_measures", index=False)
 
-            
-
-
-if __name__ == "__main__":
-    o = experiments()
-    o.experiment("./experiment_1.xlsx",1000)
-    o.convertResults()
-
-
-
+        
 
