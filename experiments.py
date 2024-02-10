@@ -3,10 +3,13 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from time import time as timer 
+import psutil
+import os
+
 
 
 class performanceTest: 
-    def __init__(self):
+    def __init__(self, file, numberOfIteration):
 
         self.databases = ["grundriss2", "grundriss2RDF", "grundriss6", "grundriss6RDF", "grundriss8", "grundriss8RDF", "grundriss10", "grundriss10RDF"]
         
@@ -18,12 +21,14 @@ class performanceTest:
         self.graphs_measures={}
     
         # Number for running each query again -> to get a stable result
-        self.numberOfIteration = None
-    
-
-    def executeExperiment(self, file, numberOfIteration):
-    
         self.numberOfIteration = numberOfIteration
+        self.file = file 
+
+
+
+    def executeExperiment(self):
+    
+        self.numberOfIteration = self.numberOfIteration
 
         with  GraphDatabase.driver(self.__URI, auth=self.__AUTH) as driver:
             for i in range(len(self.databases)):
@@ -33,10 +38,10 @@ class performanceTest:
                     dbType = "LPG"
 
                 with driver.session(database=self.databases[i]) as session:
-                    self.queries =self.getQueriesFromFile(file)
+                    self.queries =self.getQueriesFromFile(self.file)
 
                     # Execute first experiment
-                    if "1" in file:
+                    if "1" in self.file:
                         session.execute_read(
                             self.setup, 
                             dbType, 
@@ -44,7 +49,7 @@ class performanceTest:
                         )
                 
                     # Execute second experiment
-                    if "2" in file:
+                    if "2" in self.file:
                          session.execute_write(
                             self.setup, 
                             dbType, 
@@ -64,43 +69,44 @@ class performanceTest:
 
        # Safe results of each graph in this dict 
        self.graphs_measures[dbName]=pd.concat([measure_type1.T, measure_type2.T, measure_type3.T])
-
-     
+      
     
       
     # Execute the queries (of a specifc type) and for a certain number of iterations
     def executeQueries(self, tx, set, typeNumber, dbName): 
         measuresType = pd.DataFrame({
-                            f"Type{typeNumber}_query1":{"Type":None, "query":None, "Mean":None, "Std":None, "Median":None}, 
-                            f"Type{typeNumber}_query2":{"Type":None, "query":None, "Mean":None, "Std":None, "Median":None},
-                            f"Type{typeNumber}_query3":{"Type":None, "query":None, "Mean":None, "Std":None, "Median":None},
-                            f"Type{typeNumber}_query4":{"Type":None, "query":None, "Mean":None, "Std":None, "Median":None}
+                            f"Type{typeNumber}_query1":{"Type":None, "query":None, "Total Execution Time":None, "Average Response Time":None, "Memory Usage":None}, 
+                            f"Type{typeNumber}_query2":{"Type":None, "query":None, "Total Execution Time":None, "Average Response Time":None, "Memory Usage":None},
+                            f"Type{typeNumber}_query3":{"Type":None, "query":None, "Total Execution Time":None, "Average Response Time":None, "Memory Usage":None},
+                            f"Type{typeNumber}_query4":{"Type":None, "query":None, "Total Execution Time":None, "Average Response Time":None, "Memory Usage":None}
                         })
 
         
         for i , query in enumerate(set):
 
-            execution_time = [] # For saving the execution time in each iteration
+            execution_times = [] # For saving the execution time in each iteration
+            memory_usages = []
 
-            with tqdm(total=self.numberOfIteration, desc=f"Graph: {dbName}, Type: {typeNumber},  Query: {i}", unit="query") as pbar:
+            with tqdm(total=self.numberOfIteration, desc=f"Graph: {dbName}, Type: {typeNumber},  Query: {i+1}", unit="query") as pbar:
                 for _ in range(self.numberOfIteration):
-                    
-                    start = timer()
+
+                    memory_before, start_time = self.measure_usage()
                     tx.run(query)
-                    end = timer()
+                    memory_after, end_time = self.measure_usage()
 
                     key = f"Type{typeNumber}_query{i+1}"
-                    execution_time.append( (end-start) *1e6) # execution time in microseconds
+                    execution_times.append( (end_time-start_time) *1e6) # execution time in microseconds
+                    memory_usages.append(memory_after-memory_before) # in bytes 
                     pbar.update()
+        
 
-                # Calculate the performance metrics and save them 
-                measuresType[key]["Type"] = typeNumber
-                measuresType[key]["query"] = f"query_{i+1}"
-                measuresType[key]["Mean"] = np.mean(execution_time)
-                measuresType[key]["Median"] = np.median(execution_time)
-                measuresType[key]["Std"] = np.std(execution_time)
+            measuresType[key]["Type"] = typeNumber
+            measuresType[key]["query"] = f"query_{i+1}"
+            measuresType[key]["Average Response Time"] = np.mean(execution_times)
+            measuresType[key]["Total Execution Time"] = np.median(execution_times)
+            measuresType[key]["Memory Usage"] = np.mean(memory_usages)
 
-
+        print(measuresType)
         return measuresType
 
     # Get the queries form the file
@@ -111,7 +117,10 @@ class performanceTest:
     def convertResults(self):
         for db in self.databases:
             df = self.graphs_measures[db]
-            df.to_csv(f"./Experiment_1/results/{db}_measures", index=False)
+            df.to_csv(f"./experiment_1/results/{db}_measures", index=False)
 
+    def measure_usage(self):
+        p = psutil.Process(os.getpid())
+        return p.memory_full_info().rss ,timer()
         
 
