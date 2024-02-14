@@ -115,7 +115,9 @@ class performanceTest:
 
     # Get the queries form the file
     def getQueriesFromFile(self,file):
-        return pd.read_excel(file)
+        df =  pd.read_excel(file)
+        return df[['Type', 'RDF', 'LPG']]
+        
     
     # Create a cvs file with the results for each graph
     def convertResults(self, file):
