@@ -61,29 +61,26 @@ class performanceTest:
             
             if "1" in self.file:
                 measuresType = pd.DataFrame({
-                    "Query1":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query2":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None}, 
-                    "Query3":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query4":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query5":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query6":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None}, 
-                    "Query7":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query8":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query9":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query10":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None}, 
-                    "Query11":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None},
-                    "Query12":{"Query":None, "Minimum Execution Time (µs)": None, "Maximum Execution Time (µs)": None, "Average Response Time (µs)": None}
+                    "Query1":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query2":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None}, 
+                    "Query3":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query4":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query5":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query6":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None}, 
+                    "Query7":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query8":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None},
+                    "Query9":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)": None}
                 })
-                execution_times={"query1":[], "query2":[], "query3":[], "query4":[], "query5":[], "query6":[], "query7":[], "query8":[], "query9":[], "query10":[], "query11":[], "query12":[]}
+                execution_times={"query1":[], "query2":[], "query3":[], "query4":[], "query5":[], "query6":[], "query7":[], "query8":[], "query9":[]}
             
             else:
                 measuresType = pd.DataFrame({
-                    "Query1":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None}, 
-                    "Query2":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None},
-                    "Query3":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None}, 
-                    "Query4":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None},
-                    "Query5":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None}, 
-                    "Query6":{"Query":None, "Minimum Execution Time (µs)":None, "Maximum Execution Time (µs)":None, "Average Response Time (µs)":None},
+                    "Query1":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None}, 
+                    "Query2":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None},
+                    "Query3":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None}, 
+                    "Query4":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None},
+                    "Query5":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None}, 
+                    "Query6":{"Query":None, "Standard Deviation": None, "Average Response Time (µs)":None},
                     
                 })
                 execution_times={"query1":[], "query2":[], "query3":[], "query4":[], "query5":[], "query6":[]}
@@ -106,9 +103,10 @@ class performanceTest:
 
             for i, _ in enumerate(set):
                 measuresType[f"Query{i+1}"]["Query"] = f"{i+1}"
+                measuresType[f"Query{i+1}"]["Standard Deviation"] = np.std(execution_times[f"query{i+1}"])
                 measuresType[f"Query{i+1}"]["Average Response Time (µs)"] = np.mean(execution_times[f"query{i+1}"])
-                measuresType[f"Query{i+1}"]["Maximum Execution Time (µs)"] = max(execution_times[f"query{i+1}"])
-                measuresType[f"Query{i+1}"]["Minimum Execution Time (µs)"] = min(execution_times[f"query{i+1}"])
+              
+                
 
             return measuresType
     
@@ -123,6 +121,6 @@ class performanceTest:
     def convertResults(self, file):
         for db in self.databases:
             df = self.graphs_metrics[db]
-            df.to_csv(f"{file}/{db}_measures", index=False)
+            df.to_csv(f"{file}/{db}.csv", index=False)
 
     
