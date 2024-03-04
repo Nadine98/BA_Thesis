@@ -10,7 +10,7 @@ class performanceTest:
     def __init__(self, file, numberOfIteration):
 
         # Graphs that are saved in neo4j
-        self.databases = ["grundriss2", "grundriss2RDF", "grundriss6", "grundriss6RDF", "grundriss8", "grundriss8RDF", "grundriss10", "grundriss10RDF"]
+        self.databases = ["Grundriss2", "Grundriss2RDF", "Grundriss6", "Grundriss6RDF", "Grundriss8", "Grundriss8RDF", "Grundriss10", "Grundriss10RDF"]
 
         # Adding the execution times for graph (LPG and RDF graph)
         self.graphs_metrics={}

@@ -1,12 +1,12 @@
 from experiments import performanceTest
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
 
 def average_response_time(experiment):
         
-        for i, model in enumerate(["grundriss2", "grundriss6", "grundriss8", "grundriss10"]): 
-
+        for i, model in enumerate(["Grundriss2", "Grundriss6", "Grundriss8", "Grundriss10"]): 
             # find right path of the model
             model_path_LPG =f"{experiment}/results/{model}.csv"
             model_path_RDF =f"{experiment}/results/{model}RDF.csv"
@@ -19,10 +19,16 @@ def average_response_time(experiment):
             X_axis = np.arange(len(queries)) 
 
 
-            plt.bar(X_axis - 0.2, data_LPG["Average Response Time (µs)"], 0.4,  label = 'LPG') 
-            plt.bar(X_axis + 0.2, data_RDF["Average Response Time (µs)"], 0.4,  label = 'RDF') 
+            plt.bar(X_axis - 0.2, data_LPG["Average Response Time (µs)"], 0.4, label = 'LPG') 
+            plt.bar(X_axis + 0.2, data_RDF["Average Response Time (µs)"], 0.4, label = 'RDF') 
 
+            if "2" in experiment or ("1" in experiment and model == "Grundriss8"):
+                plt.yscale('log')
+                # Use ScalarFormatter to get integer labels
+                plt.gca().yaxis.set_major_formatter(ticker.ScalarFormatter())
+                
 
+        
             plt.xticks(X_axis, queries) 
             plt.xlabel("Queries") 
             plt.ylabel("Execution Time (µs)") 
@@ -32,10 +38,7 @@ def average_response_time(experiment):
             plt.savefig(f"{experiment}/diagrams/{model}.png")
             plt.close()
 
-
-
-if __name__ == "__main__":
-    iterations = 1000
+def conduct_experiments(iterations = 1000):
     #first Experiment 
     e1 = performanceTest(file ="./experiment_1/queries.xlsx", numberOfIteration=iterations)
     e1.executeExperiment()
@@ -46,6 +49,9 @@ if __name__ == "__main__":
     e2.executeExperiment()
     e2.convertResults("./experiment_2/results")
 
+
+if __name__ == "__main__":
+    conduct_experiments()
     # Anaysis 
     average_response_time("experiment_1")
     average_response_time("experiment_2")
