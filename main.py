@@ -1,6 +1,5 @@
 from experiments import performanceTest
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
 
@@ -21,11 +20,6 @@ def average_response_time(experiment):
 
             plt.bar(X_axis - 0.2, data_LPG["Average Response Time (µs)"], 0.4, label = 'LPG') 
             plt.bar(X_axis + 0.2, data_RDF["Average Response Time (µs)"], 0.4, label = 'RDF') 
-
-            if "2" in experiment or ("1" in experiment and model == "Grundriss8"):
-                plt.yscale('log')
-                # Use ScalarFormatter to get integer labels
-                plt.gca().yaxis.set_major_formatter(ticker.ScalarFormatter())
                 
 
         
@@ -51,7 +45,9 @@ def conduct_experiments(iterations = 1000):
 
 
 if __name__ == "__main__":
+    # Conduct experiments
     conduct_experiments()
-    # Anaysis 
+    
+    # Display results in bar charts
     average_response_time("experiment_1")
     average_response_time("experiment_2")
