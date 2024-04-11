@@ -51,3 +51,6 @@ if __name__ == "__main__":
     # Display results in bar charts
     average_response_time("experiment_1")
     average_response_time("experiment_2")
+    average_response_time("experiment_1")
+    average_response_time("experiment_2")
+
